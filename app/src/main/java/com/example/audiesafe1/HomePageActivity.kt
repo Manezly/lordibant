@@ -4,18 +4,52 @@ import android.content.Intent
 import android.os.Bundle
 import android.widget.ImageButton
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.GravityCompat
+import androidx.drawerlayout.widget.DrawerLayout
+import com.google.android.material.navigation.NavigationView
+import android.net.Uri
 
 class HomePageActivity : AppCompatActivity() {
+    private lateinit var drawerLayout: DrawerLayout
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.home_page)
 
-        val burgerButton: ImageButton = findViewById(R.id.burgerButton)
-        val historyButton: ImageButton = findViewById(R.id.historyButton)
+        drawerLayout = findViewById(R.id.drawer_layout)
 
-        burgerButton.setOnClickListener{
+        val burgerButton: ImageButton = findViewById(R.id.burgerButton)
+        burgerButton.setOnClickListener {
             openSideMenu()
         }
+
+        val navView: NavigationView = findViewById(R.id.nav_view)
+        navView.setNavigationItemSelectedListener { menuItem ->
+            when (menuItem.itemId) {
+                R.id.privacy_policy -> {
+                    // Open Privacy Policy
+                    val intent = Intent(this, PrivacyPolicyActivity::class.java)
+                    startActivity(intent)
+                    drawerLayout.closeDrawer(GravityCompat.START)
+                    true
+                }
+                R.id.terms_conditions -> {
+                    // Open Terms and Conditions
+                    val intent = Intent(this, TermsAndConditionsActivity::class.java)
+                    startActivity(intent)
+                    drawerLayout.closeDrawer(GravityCompat.START)
+                    true
+                }
+                R.id.logout -> {
+                    // Handle logout
+                    drawerLayout.closeDrawer(GravityCompat.START)
+                    true
+                }
+                else -> false
+            }
+        }
+
+        val historyButton: ImageButton = findViewById(R.id.historyButton)
+
 
         historyButton.setOnClickListener{
             openHistoryPage()
@@ -23,8 +57,7 @@ class HomePageActivity : AppCompatActivity() {
     }
 
     private fun openSideMenu() {
-        // Logic to open your side menu
-        // This could be a DrawerLayout or a custom dialog
+        drawerLayout.openDrawer(GravityCompat.START)
     }
 
     private fun openHistoryPage() {
