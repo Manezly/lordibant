@@ -3,11 +3,12 @@
     <item
         android:id="@+id/privacy_policy"
         android:title="Privacy Policy"/>
-
+    <group android:checkableBehavior="single"
+        android:id="@+id/group1">
     <item
         android:id="@+id/terms_conditions"
         android:title="Terms and Conditions"/>
-
+    </group>
     <item
         android:id="@+id/logout"
         android:title="Logout"/>

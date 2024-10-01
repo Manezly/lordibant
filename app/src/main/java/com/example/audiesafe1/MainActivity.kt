@@ -1,5 +1,6 @@
 package com.example.audiesafe1
 
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
@@ -20,7 +21,7 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.layout) // Update with your actual layout file name
+        setContentView(R.layout.layout)
 
         val emailInput: EditText = findViewById(R.id.emailInput)
         val loginButton: Button = findViewById(R.id.loginButton)
@@ -68,6 +69,9 @@ class MainActivity : ComponentActivity() {
 
                     if (response.isSuccessful) {
                         runOnUiThread {
+                            // Store the email in SharedPreferences
+                            storeEmail(email)
+
                             Toast.makeText(this@MainActivity, "Login Successful", Toast.LENGTH_SHORT).show()
                             val intent = Intent(this@MainActivity, HomePageActivity::class.java)
                             startActivity(intent)
@@ -80,6 +84,20 @@ class MainActivity : ComponentActivity() {
                     }
                 }
 
+                // Function to store email in SharedPreferences
+                private fun storeEmail(email: String) {
+                    val sharedPreferences = getSharedPreferences("UserPreferences", Context.MODE_PRIVATE)
+                    val editor = sharedPreferences.edit()
+                    editor.putString("user_email", email)  // Storing the email
+                    editor.apply() // Save changes asynchronously
+                }
+
+                // Function to retrieve stored email from SharedPreferences (if needed)
+                private fun getEmail(): String? {
+                    val sharedPreferences = getSharedPreferences("UserPreferences", Context.MODE_PRIVATE)
+                    return sharedPreferences.getString("user_email", null) // Get email or return null if not found
+                }
             })
         }
-}}
+    }
+}
