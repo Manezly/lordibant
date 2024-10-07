@@ -92,22 +92,52 @@
                 android:textSize="24sp"
                 android:layout_gravity="center_horizontal"/>
 
-            <ImageView
-                android:id="@+id/contentImage"
-                android:layout_width="150dp"
-                android:layout_height="150dp"
-                android:scaleType="fitCenter"
-                android:src="@drawable/android_logo"
-                android:layout_gravity="center_horizontal"/>
+<!--            <ImageView-->
+<!--                android:id="@+id/contentImage"-->
+<!--                android:layout_width="150dp"-->
+<!--                android:layout_height="150dp"-->
+<!--                android:scaleType="fitCenter"-->
+<!--                android:src="@drawable/android_logo"-->
+<!--                android:layout_gravity="center_horizontal"/>-->
 
-            <TextView
-                android:id="@+id/alertStateText"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Currently no alerts"
-                android:textColor="@color/colorPrimary"
-                android:textSize="16sp"
-                android:layout_gravity="center_horizontal"/>
+<!--            <TextView-->
+<!--                android:id="@+id/alertStateText"-->
+<!--                android:layout_width="wrap_content"-->
+<!--                android:layout_height="wrap_content"-->
+<!--                android:text="Currently no alerts"-->
+<!--                android:textColor="@color/colorPrimary"-->
+<!--                android:textSize="16sp"-->
+<!--                android:layout_gravity="center_horizontal"/>-->
+
+
+            <LinearLayout
+                xmlns:android="http://schemas.android.com/apk/res/android"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="vertical"
+                android:padding="16dp">
+
+                <!-- Display Date -->
+                <TextView
+                    android:id="@+id/dateTextView"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Date: " />
+
+                <!-- Display Name -->
+                <TextView
+                    android:id="@+id/nameTextView"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Name: " />
+
+                <!-- Display PartOf -->
+                <TextView
+                    android:id="@+id/partOfTextView"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Part Of: " />
+            </LinearLayout>
         </LinearLayout>
 
     </androidx.constraintlayout.widget.ConstraintLayout>

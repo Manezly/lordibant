@@ -10,14 +10,18 @@ import com.google.android.material.navigation.NavigationView
 import android.net.Uri
 import android.os.Handler
 import android.util.Log
+import android.view.LayoutInflater
 import android.widget.Button
 import android.widget.EditText
+import android.widget.LinearLayout
+import android.widget.TextView
 import android.widget.Toast
 import okhttp3.Call
 import okhttp3.Callback
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.Response
+import org.json.JSONArray
 import org.json.JSONObject
 import java.io.IOException
 
@@ -25,10 +29,13 @@ class HomePageActivity : AppCompatActivity() {
     private val client = OkHttpClient() // OkHttp client to make network requests
     private val interval: Long = 2500 // 2.5 seconds for polling
     private val handler = Handler() // Handler to schedule periodic tasks
+    private val email = "user@example.com"
     private lateinit var drawerLayout: DrawerLayout
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.home_page)
+
+        fetchActiveAlerts(email)
 
         drawerLayout = findViewById(R.id.drawer_layout)
 
@@ -159,5 +166,72 @@ class HomePageActivity : AppCompatActivity() {
     // Stop polling task
     private fun stopRepeatingTask() {
         handler.removeCallbacks(fetchDataRunnable)
+    }
+
+    private fun fetchData(email: String) {
+        // API URL, assuming the API takes email as a query parameter
+        val url = "http://example.com/api/data?email=$email"
+
+        val request = Request.Builder()
+            .url(url)
+            .build()
+
+        client.newCall(request).enqueue(object : Callback {
+            override fun onFailure(call: Call, e: IOException) {
+                Log.e("FetchError", "Request failed: ${e.message}")
+                // Handle failure
+            }
+
+            override fun onResponse(call: Call, response: Response) {
+                if (response.isSuccessful) {
+                    val responseBody = response.body?.string()
+
+                    // Parse the JSON array response
+                    val jsonArray = JSONArray(responseBody)
+
+                    // Update the UI on the main thread
+                    runOnUiThread {
+                        updateUI(jsonArray)
+                    }
+                } else {
+                    Log.e("FetchError", "Failed to fetch data: ${response.code}")
+                }
+            }
+        })
+    }
+
+    /**
+     * Dynamically update the UI with the fetched array of data.
+     */
+    private fun updateUI(dataArray: JSONArray) {
+        // Find the LinearLayout where data will be added
+        val dataContainer: LinearLayout = findViewById(R.id.dataContainer)
+
+        // Clear any previous data
+        dataContainer.removeAllViews()
+
+        // Loop through the array and add each item to the UI
+        for (i in 0 until dataArray.length()) {
+            val item: JSONObject = dataArray.getJSONObject(i)
+            val date = item.getString("Date")
+            val name = item.getString("Name")
+            val partOf = item.getString("PartOf")
+
+            // Inflate a new row for each item
+            val itemView = LayoutInflater.from(this).inflate(R.layout.item_data, dataContainer, false)
+
+            // Find the TextViews in the inflated layout and set data
+            val dateTextView: TextView = itemView.findViewById(R.id.dateTextView)
+            val nameTextView: TextView = itemView.findViewById(R.id.nameTextView)
+            val partOfTextView: TextView = itemView.findViewById(R.id.partOfTextView)
+
+            // Set the values
+            dateTextView.text = "Date: $date"
+            nameTextView.text = "Name: $name"
+            partOfTextView.text = "Part Of: $partOf"
+
+            // Add the view to the container
+            dataContainer.addView(itemView)
+        }
     }
 }
