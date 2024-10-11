@@ -1,100 +1,91 @@
 package com.example.audiesafe1
 
 import android.Manifest
-import android.content.Intent
 import android.content.pm.PackageManager
-import android.os.Build
-import androidx.activity.result.contract.ActivityResultContracts
-import androidx.appcompat.app.AlertDialog
-import androidx.appcompat.app.AppCompatActivity
+import android.location.Location
 import android.os.Bundle
+import android.util.Log
 import android.widget.Button
-import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import androidx.activity.result.ActivityResultLauncher
+import com.google.android.gms.location.*
 
 class MainActivity : AppCompatActivity() {
 
-    private lateinit var requestPermissionLauncher: ActivityResultLauncher<String>
+    private val LOCATION_PERMISSION_REQUEST_CODE = 1001
+    private lateinit var fusedLocationClient: FusedLocationProviderClient
+    private lateinit var locationRequest: LocationRequest
+    private lateinit var locationCallback: LocationCallback
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.layout)
 
+        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
 
-        val continueButton: Button = findViewById(R.id.loginButton)
+        // Create LocationRequest with the Builder
+        locationRequest = LocationRequest.Builder(Priority.PRIORITY_HIGH_ACCURACY, 10000)
+            .setWaitForAccurateLocation(false) // Get immediate location updates
+            .setMinUpdateIntervalMillis(5000) // Minimum update interval
+            .build()
 
-        continueButton.setOnClickListener {
-            // Create an Intent to start the HomePageActivity
-            val intent = Intent(this, HomePageActivity::class.java)
-            startActivity(intent) // Start the HomePageActivity
+        // Initialize location callback
+        locationCallback = object : LocationCallback() {
+            override fun onLocationResult(locationResult: LocationResult) {
+                // Log all updated locations
+                for (location in locationResult.locations) {
+                    if (location != null) {
+                        // Log updated Latitude and Longitude
+                        Log.d("SOS", "Updated Latitude: ${location.latitude}, Longitude: ${location.longitude}")
+                    } else {
+                        Log.d("SOS", "Received null location update.")
+                    }
+                }
+            }
         }
 
-        // Initialize the permission launcher
-        requestPermissionLauncher = registerForActivityResult(
-            ActivityResultContracts.RequestPermission()
-        ) { isGranted: Boolean ->
-            if (isGranted) {
-                // Permission is granted, proceed with notification setup
-                setupPushNotifications()
+        // Setup SOS button click listener
+        val sosButton: Button = findViewById(R.id.sosButton)
+        sosButton.setOnClickListener {
+            Log.d("SOS", "SOS Button Pressed")
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
+                == PackageManager.PERMISSION_GRANTED
+            ) {
+                requestNewLocation()
             } else {
-                // Permission is denied, notify the user
-                notifyUser("Permission for notifications denied.")
+                ActivityCompat.requestPermissions(
+                    this,
+                    arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
+                    LOCATION_PERMISSION_REQUEST_CODE
+                )
             }
         }
-
-        // Check if the notification permission is needed
-        checkAndRequestNotificationPermission()
     }
 
-    private fun checkAndRequestNotificationPermission() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {  // Android 13 and above
-            when {
-                ContextCompat.checkSelfPermission(
-                    this, Manifest.permission.POST_NOTIFICATIONS
-                ) == PackageManager.PERMISSION_GRANTED -> {
-                    // Permission already granted, proceed with notification setup
-                    setupPushNotifications()
-                }
-                shouldShowRequestPermissionRationale(Manifest.permission.POST_NOTIFICATIONS) -> {
-                    // Show a rationale for the request before prompting the user
-                    showNotificationPermissionRationale()
-                }
-                else -> {
-                    // Directly request the notification permission
-                    requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
-                }
-            }
-        } else {
-            // Permissions are automatically granted for earlier versions
-            setupPushNotifications()
+    // Function to request new location updates
+    private fun requestNewLocation() {
+        Log.d("SOS", "Requesting new location updates...")
+        // Request location updates
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            Log.d("SOS", "Location permission not granted. Cannot request location updates.")
+            return
         }
+        fusedLocationClient.requestLocationUpdates(locationRequest, locationCallback, null)
     }
 
-    private fun showNotificationPermissionRationale() {
-        // Show a dialog explaining why the app needs notification permission
-        AlertDialog.Builder(this)
-            .setTitle("Notification Permission Required")
-            .setMessage("This app requires notifications to send you important messages, such as alerts and updates. Please enable notifications to ensure you stay informed.")
-            .setPositiveButton("Allow") { _, _ ->
-                // Request permission again after explanation
-                requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+    // Handle permission request result
+    override fun onRequestPermissionsResult(
+        requestCode: Int, permissions: Array<out String>, grantResults: IntArray
+    ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if (requestCode == LOCATION_PERMISSION_REQUEST_CODE) {
+            if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                Log.d("SOS", "Location permission granted")
+                requestNewLocation()
+            } else {
+                Log.d("SOS", "Location permission denied")
             }
-            .setNegativeButton("Deny") { _, _ ->
-                // Notify the user about the denial
-                notifyUser("You won't receive notifications without permission.")
-            }
-            .setCancelable(false)
-            .show()
-    }
-
-    private fun setupPushNotifications() {
-        // Initialize your push notifications logic here
-        Toast.makeText(this, "Push notifications enabled", Toast.LENGTH_SHORT).show()
-    }
-
-    private fun notifyUser(message: String) {
-        // Show a message to the user, such as a Toast or Snackbar
-        Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
+        }
     }
 }

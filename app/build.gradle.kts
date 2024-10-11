@@ -63,6 +63,7 @@ dependencies {
     implementation(libs.androidx.appcompat)
     implementation(libs.androidx.constraintlayout)
     implementation(libs.androidx.drawerlayout)
+    implementation(libs.play.services.location)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -74,5 +75,6 @@ dependencies {
     implementation(libs.okhttp)
     implementation(libs.material)
     implementation(libs.androidx.drawerlayout)
+    implementation ("com.google.android.gms:play-services-location:21.0.1")
 
 }
